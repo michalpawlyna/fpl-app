@@ -28,6 +28,16 @@ export default defineEventHandler(async (event) => {
       return { error: 'Player not found' };
     }
 
+    // Fetch detailed player data to get gameweek points
+    const playerDetailUrl = `https://fantasy.premierleague.com/api/element-summary/${playerId}/`;
+    const playerDetailResponse = await fetch(playerDetailUrl);
+    const playerDetailData = await playerDetailResponse.json();
+
+    const gameweekPoints = playerDetailData.history.map((game) => ({
+      gameweek: game.round,
+      points: game.total_points,
+    }));
+
     const playerDetails = {
       id: player.id,
       first_name: player.first_name,
@@ -49,6 +59,7 @@ export default defineEventHandler(async (event) => {
       red_cards: player.red_cards,
       bonus: player.bonus,
       status: player.status,
+      gameweek_points: gameweekPoints,
     };
 
     return playerDetails;

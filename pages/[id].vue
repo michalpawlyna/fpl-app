@@ -112,14 +112,23 @@
       </div>
       </div>
   </div>
-  
-  
+  <div class="stats stats-vertical bg-base-200 shadow-lg rounded-lg p-4 my-4 w-full max-w-xl">
+  <div class="stat">
+    <div class="stat-title">Gameweek Points</div>
+    <div class="chart-container">
+      <canvas id="gameweekPointsChart" class="rounded-lg"></canvas>
+    </div>
+  </div>
+</div>
 </div>
 
   <FooterComp />
 </template>
 
 <script>
+import { Chart, registerables } from 'chart.js';
+Chart.register(...registerables);
+
 export default {
   data() {
     return {
@@ -143,6 +152,7 @@ export default {
       playerInjuryStatus: "",
       isFavourite: false,
       user: null,
+      gameweekPoints: [],
     };
   },
   mounted() {
@@ -165,10 +175,12 @@ export default {
     this.playerBonusPoints = sessionStorage.getItem("selectedPlayerBonusPoints") || "";
     this.playerInjuryStatus = sessionStorage.getItem("selectedPlayerInjuryStatus") || "";
     this.user = useSupabaseUser().value;
+    this.gameweekPoints = JSON.parse(sessionStorage.getItem("selectedPlayerGameweekPoints")) || [];
     if (this.user) {
       const storedPlayers = JSON.parse(localStorage.getItem('favouritePlayers')) || [];
       this.isFavourite = storedPlayers.some(player => player.id === this.$route.params.id);
     }
+    this.renderChart();
   },
   methods: {
     getPlayerImage(playerCode) {
@@ -190,6 +202,30 @@ export default {
       }
       this.isFavourite = !this.isFavourite;
     },
+    renderChart() {
+      const ctx = document.getElementById('gameweekPointsChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: this.gameweekPoints.map(point => `GW ${point.gameweek}`),
+          datasets: [{
+            label: 'Points',
+            data: this.gameweekPoints.map(point => point.points),
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
   },
 };
+
 </script>

@@ -28,6 +28,7 @@ export default function usePlayerNavigation() {
         sessionStorage.setItem("selectedPlayerRedCards", playerData.red_cards);
         sessionStorage.setItem("selectedPlayerBonusPoints", playerData.bonus);
         sessionStorage.setItem("selectedPlayerInjuryStatus", playerData.status);
+        sessionStorage.setItem("selectedPlayerGameweekPoints", JSON.stringify(playerData.gameweek_points));
 
         router.push(`/${playerId}`);
       }
