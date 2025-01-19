@@ -1,6 +1,6 @@
 <template>
   <Navbar />
-  <div class="h-screen bg-base-100 m-10">
+  <div class="min-h-screen bg-base-100 m-10">
     <HeadingText />
     <PlayerSearch />
   </div>

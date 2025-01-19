@@ -15,9 +15,12 @@ export default defineEventHandler(async (event) => {
 
     const data = await response.json();
 
-    // Create a map of team ID to team name for easier lookup
+    // Create a map of team ID to team name and logo for easier lookup
     const teams = data.teams.reduce((acc, team) => {
-      acc[team.id] = team.name;
+      acc[team.id] = {
+        name: team.name,
+        logo: `https://resources.premierleague.com/premierleague/badges/t${team.code}.png`
+      };
       return acc;
     }, {});
 
@@ -38,12 +41,29 @@ export default defineEventHandler(async (event) => {
       points: game.total_points,
     }));
 
+    // Fetch fixtures data
+    const fixturesUrl = "https://fantasy.premierleague.com/api/fixtures/";
+    const fixturesResponse = await fetch(fixturesUrl);
+    const fixturesData = await fixturesResponse.json();
+
+    // Filter next 5 upcoming fixtures for the player's team
+    const nextFixtures = fixturesData
+      .filter(fixture => (fixture.team_h === player.team || fixture.team_a === player.team) && fixture.event >= data.events.find(event => event.is_current).id)
+      .slice(0, 5)
+      .map(fixture => ({
+        event: fixture.event,
+        opponent: fixture.team_h === player.team ? teams[fixture.team_a].name : teams[fixture.team_h].name,
+        opponentLogo: fixture.team_h === player.team ? teams[fixture.team_a].logo : teams[fixture.team_h].logo,
+        is_home: fixture.team_h === player.team
+      }));
+
     const playerDetails = {
       id: player.id,
       first_name: player.first_name,
       second_name: player.second_name,
       code: player.code,
-      team_name: teams[player.team],  // Map team ID to team name
+      team_name: teams[player.team].name,  // Map team ID to team name
+      team_logo: teams[player.team].logo,  // Map team ID to team logo
       price: (player.now_cost / 10).toFixed(1), // Convert price to a readable format
       position: (player.element_type === 1 ? 'GK' : player.element_type === 2 ? 'DEF' : player.element_type === 3 ? 'MID' : 'FWD'),
       total_points: player.total_points,
@@ -60,6 +80,7 @@ export default defineEventHandler(async (event) => {
       bonus: player.bonus,
       status: player.status,
       gameweek_points: gameweekPoints,
+      next_fixtures: nextFixtures
     };
 
     return playerDetails;

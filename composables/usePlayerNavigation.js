@@ -13,6 +13,7 @@ export default function usePlayerNavigation() {
         sessionStorage.setItem("selectedPlayerName", `${playerData.first_name} ${playerData.second_name}`);
         sessionStorage.setItem("selectedPlayerCode", playerData.code);
         sessionStorage.setItem("selectedPlayerTeam", playerData.team_name);
+        sessionStorage.setItem("selectedPlayerTeamLogo", playerData.team_logo);
         sessionStorage.setItem("selectedPlayerPrice", playerData.price);
         sessionStorage.setItem("selectedPlayerPosition", playerData.position);
         sessionStorage.setItem("selectedPlayerTotalPoints", playerData.total_points);
@@ -29,6 +30,7 @@ export default function usePlayerNavigation() {
         sessionStorage.setItem("selectedPlayerBonusPoints", playerData.bonus);
         sessionStorage.setItem("selectedPlayerInjuryStatus", playerData.status);
         sessionStorage.setItem("selectedPlayerGameweekPoints", JSON.stringify(playerData.gameweek_points));
+        sessionStorage.setItem("selectedPlayerNextFixtures", JSON.stringify(playerData.next_fixtures));
 
         router.push(`/${playerId}`);
       }
