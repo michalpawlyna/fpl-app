@@ -1,7 +1,7 @@
 <template>
-  <div class="card md:card-side bg-base-200 shadow-lg w-fit">
+  <div class="card sm:card-side bg-base-200 w-fit">
     <figure>
-      <img :src="getPlayerImage(playerCode)" alt="Player image" class="player-img px-5 py-5" />
+      <img :src="getPlayerImage(playerCode)" alt="Player image" class="player-img px-3 py-3" />
     </figure>
     <div class="stats stats-vertical shadow max-w-sm bg-primary text-white">
       <div class="stat">

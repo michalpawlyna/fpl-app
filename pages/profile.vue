@@ -1,35 +1,53 @@
 <template>
   <Navbar />
-  <div class="h-screen bg-base-100 m-10 flex flex-col items-center">
+  <div class="min-h-screen bg-base-100 m-10 flex flex-col items-center">
     <div class="max-w-md mx-auto p-6 bg-base-200 rounded-lg shadow-md">
       <h1 class="text-2xl font-bold text-center mb-5">User Profile</h1>
       <form class="space-y-4" @submit.prevent="updateProfile">
 
         <div class="flex flex-col items-center">
           <div class="relative mb-5 group">
+            <div class="avatar placeholder">
+              <div class="bg-neutral text-neutral-content w-32 h-32 rounded-full flex items-center justify-center cursor-pointer" @click="triggerFileInput">
+                <span></span>
+              </div>
+            </div>
             <img
               v-if="avatarPreview"
               :src="avatarPreview"
               alt="Profile Photo"
-              class="w-32 h-32 rounded-full object-cover cursor-pointer"
+              class="w-32 h-32 rounded-full object-cover cursor-pointer absolute inset-0"
               @click="triggerFileInput"
             />
-          <div 
-            class="absolute inset-0 rounded-full bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
-            @click="triggerFileInput"
-          >
-          <span class="text-white text-sm font-semibold">Change Avatar</span>
+            <div 
+              class="absolute inset-0 rounded-full bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+              @click="triggerFileInput"
+            >
+              <span class="text-white text-sm font-semibold">Change Avatar</span>
+            </div>
+            <input
+              id="avatar"
+              type="file"
+              accept="image/*"
+              @change="uploadAvatar"
+              class="hidden"
+              ref="fileInput"
+            />
           </div>
-          <input
-            id="avatar"
-            type="file"
-            accept="image/*"
-            @change="uploadAvatar"
-            class="hidden"
-            ref="fileInput"
-          />
+          <div v-if="previousAvatars.length" class="mt-4">
+            <h3 class="text-center text-lg font-semibold mb-2">Choose from previous avatars</h3>
+            <div class="grid grid-cols-3 gap-4 justify-center">
+              <img
+                v-for="avatar in previousAvatars"
+                :key="avatar"
+                :src="avatar"
+                @click="selectAvatar(avatar)"
+                class="w-16 h-16 rounded-full object-cover cursor-pointer border-2"
+                :class="{'border-primary': avatar === avatarPreview}"
+              />
+            </div>
+          </div>
         </div>
-      </div>
 
         <div>
           <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -89,6 +107,7 @@ const avatar_url = ref('');
 const email = ref('');
 const avatarPreview = ref('');
 const fileInput = ref(null);
+const previousAvatars = ref([]);
 
 loading.value = true;
 const user = useSupabaseUser();
@@ -112,10 +131,30 @@ if (data) {
       .getPublicUrl(avatar_url.value);
 
     avatarPreview.value = publicUrl.publicUrl;
+  } else {
+    avatarPreview.value = 'https://daisyui.com/tailwind-css-component-profile-1@56w.png';
   }
 }
 
 loading.value = false;
+
+// Fetch previous avatars
+onMounted(async () => {
+  if (user.value) {
+    const { data: files } = await supabase.storage
+      .from('avatars')
+      .list(user.value.id);
+
+    if (files) {
+      previousAvatars.value = files.map(file => {
+        const { data: publicUrl } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(`${user.value.id}/${file.name}`);
+        return publicUrl.publicUrl;
+      });
+    }
+  }
+});
 
 async function uploadAvatar(event) {
   try {
@@ -141,6 +180,8 @@ async function uploadAvatar(event) {
       .getPublicUrl(filePath);
 
     avatarPreview.value = publicUrl.publicUrl;
+    previousAvatars.value.push(publicUrl.publicUrl);
+
   } catch (error) {
     alert(error.message);
   } finally {
@@ -164,6 +205,9 @@ async function updateProfile() {
       returning: 'minimal', // Don't return the value after inserting
     });
     if (error) throw error;
+
+    // Refresh the page after updating the profile
+    window.location.reload();
   } catch (error) {
     alert(error.message);
   } finally {
@@ -173,5 +217,10 @@ async function updateProfile() {
 
 function triggerFileInput() {
   fileInput.value.click();
+}
+
+function selectAvatar(avatar) {
+  avatarPreview.value = avatar;
+  avatar_url.value = `${user.value.id}/${avatar.split('/').pop()}`;
 }
 </script>

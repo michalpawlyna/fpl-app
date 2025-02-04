@@ -32,18 +32,28 @@
 import usePlayerSearch from '@/composables/usePlayerSearch';
 import usePlayerImage from '@/composables/usePlayerImage';
 import usePlayerNavigation from '@/composables/usePlayerNavigation';
+import { onMounted, onBeforeUnmount, ref } from 'vue';
 
 export default {
   setup() {
     const { query, players, onInput, closeSearchResults } = usePlayerSearch();
     const { getPlayerImage } = usePlayerImage();
     const { goToPlayerPage } = usePlayerNavigation();
+    const searchBox = ref(null);
 
     const handleClickOutside = (event) => {
-      if (this.$refs.searchBox && !this.$refs.searchBox.contains(event.target)) {
+      if (searchBox.value && !searchBox.value.contains(event.target)) {
         closeSearchResults();
       }
     };
+
+    onMounted(() => {
+      document.addEventListener("click", handleClickOutside);
+    });
+
+    onBeforeUnmount(() => {
+      document.removeEventListener("click", handleClickOutside);
+    });
 
     return {
       query,
@@ -51,14 +61,8 @@ export default {
       onInput,
       getPlayerImage,
       goToPlayerPage,
-      handleClickOutside,
+      searchBox,
     };
-  },
-  mounted() {
-    document.addEventListener("click", this.handleClickOutside);
-  },
-  beforeDestroy() {
-    document.removeEventListener("click", this.handleClickOutside);
   },
 };
 </script>
