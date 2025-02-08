@@ -29,7 +29,7 @@
               id="avatar"
               type="file"
               accept="image/*"
-              @change="uploadAvatar"
+              @change="handleFileChange"
               class="hidden"
               ref="fileInput"
             />
@@ -108,6 +108,7 @@ const email = ref('');
 const avatarPreview = ref('');
 const fileInput = ref(null);
 const previousAvatars = ref([]);
+let newAvatarFile = null;
 
 loading.value = true;
 const user = useSupabaseUser();
@@ -156,42 +157,36 @@ onMounted(async () => {
   }
 });
 
-async function uploadAvatar(event) {
-  try {
-    loading.value = true;
-    const file = event.target.files[0];
+async function uploadAvatar() {
+  if (!newAvatarFile) return;
 
-    if (!file) throw new Error('No file selected.');
+  const filePath = `${user.value.id}/${newAvatarFile.name}`;
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(filePath, newAvatarFile, {
+      cacheControl: '3600',
+      upsert: true,
+    });
 
-    const filePath = `${user.value.id}/${file.name}`;
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: true,
-      });
+  if (uploadError) throw uploadError;
 
-    if (uploadError) throw uploadError;
+  avatar_url.value = filePath;
 
-    avatar_url.value = filePath;
+  const { data: publicUrl } = supabase.storage
+    .from('avatars')
+    .getPublicUrl(filePath);
 
-    const { data: publicUrl } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(filePath);
-
-    avatarPreview.value = publicUrl.publicUrl;
-    previousAvatars.value.push(publicUrl.publicUrl);
-
-  } catch (error) {
-    alert(error.message);
-  } finally {
-    loading.value = false;
-  }
+  avatarPreview.value = publicUrl.publicUrl;
+  previousAvatars.value.push(publicUrl.publicUrl);
 }
 
 async function updateProfile() {
   try {
     loading.value = true;
+
+    if (newAvatarFile) {
+      await uploadAvatar();
+    }
 
     const updates = {
       id: user.value.id,
@@ -222,5 +217,12 @@ function triggerFileInput() {
 function selectAvatar(avatar) {
   avatarPreview.value = avatar;
   avatar_url.value = `${user.value.id}/${avatar.split('/').pop()}`;
+}
+
+function handleFileChange(event) {
+  newAvatarFile = event.target.files[0];
+  if (newAvatarFile) {
+    avatarPreview.value = URL.createObjectURL(newAvatarFile);
+  }
 }
 </script>

@@ -8,31 +8,8 @@
       :playerPrice="playerPrice"
       :teamLogo="teamLogo"
     />
-    <div class="stats stats-vertical bg-base-200 rounded-xl w-lg">
-      <div class="stat">
-        <ul class="divide-y divide-base-200">
-          <li 
-            v-for="fixture in nextFixtures" 
-            :key="fixture.event" 
-            class="flex items-center py-3 px-4 hover:bg-base-300 rounded-lg transition">
-            <img 
-              :src="fixture.opponentLogo" 
-              alt="Opponent logo" 
-              class="w-8 h-8 mr-3" />
-            <div class="flex flex-col">
-              <span class="font-semibold">GW {{ fixture.event }}</span>
-              <span class="text-sm text-base-content">{{ fixture.opponent }}
-                <span 
-                  :class="fixture.is_home ? 'badge badge-success ml-2' : 'badge badge-warning ml-2'">
-                  {{ fixture.is_home ? 'Home' : 'Away' }}
-                </span>
-              </span>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </div>
-    <div class="stats stats-vertical bg-base-200 rounded-xl max-w-xl">
+    <NextFixtures :fixtures="nextFixtures" />
+    <div class="stats stats-vertical bg-base-200 rounded-xl max-w-2xl">
       <div class="stat">
         <select v-model="selectedGameweeks" @change="updateChart" class="select select-bordered w-full max-w-sm mb-3">
           <option value="5">Last 5</option>
@@ -41,7 +18,7 @@
           <option value="all">All</option>
         </select>
         <div class="chart-container">
-          <canvas id="gameweekPointsChart" class="rounded-lg"></canvas>
+          <canvas id="gameweekPointsChart" class="rounded-lg" style="height: 400px;"></canvas>
         </div>
       </div>
     </div>
@@ -116,12 +93,14 @@
 
 <script>
 import PlayerCardBig from '@/components/PlayerCardBig.vue';
+import NextFixtures from '@/components/NextFixtures.vue';
 import { Chart, registerables } from 'chart.js';
 Chart.register(...registerables);
 
 export default {
   components: {
     PlayerCardBig,
+    NextFixtures,
   },
   data() {
     return {
