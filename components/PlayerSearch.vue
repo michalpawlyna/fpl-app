@@ -1,6 +1,6 @@
 <template>
   <div class="search-container flex justify-center items-center mt-10">
-    <div class="search-box w-full max-w-2xl relative" ref="searchBox">
+    <div class="search-box w-full max-w-2xl relative mx-10 mt-10" ref="searchBox">
       <div class="search-input-wrapper flex items-center relative">
         <input
           type="text"

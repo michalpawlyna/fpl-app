@@ -8,8 +8,31 @@
       :playerPrice="playerPrice"
       :teamLogo="teamLogo"
     />
-    <NextFixtures :fixtures="nextFixtures" />
-    <div class="stats stats-vertical bg-base-200 rounded-xl max-w-2xl">
+    <div class="stats stats-vertical bg-base-200 rounded-xl w-lg">
+      <div class="stat">
+        <ul class="divide-y divide-base-200">
+          <li 
+            v-for="fixture in nextFixtures" 
+            :key="fixture.event" 
+            class="flex items-center py-3 px-4 hover:bg-base-300 rounded-lg transition">
+            <img 
+              :src="fixture.opponentLogo" 
+              alt="Opponent logo" 
+              class="w-8 h-8 mr-3" />
+            <div class="flex flex-col">
+              <span class="font-semibold">GW {{ fixture.event }}</span>
+              <span class="text-sm text-base-content">{{ fixture.opponent }}
+                <span 
+                  :class="fixture.is_home ? 'badge badge-success ml-2' : 'badge badge-warning ml-2'">
+                  {{ fixture.is_home ? 'Home' : 'Away' }}
+                </span>
+              </span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="stats stats-vertical bg-base-200 rounded-xl max-w-xl">
       <div class="stat">
         <select v-model="selectedGameweeks" @change="updateChart" class="select select-bordered w-full max-w-sm mb-3">
           <option value="5">Last 5</option>
@@ -18,7 +41,7 @@
           <option value="all">All</option>
         </select>
         <div class="chart-container">
-          <canvas id="gameweekPointsChart" class="rounded-lg" style="height: 400px;"></canvas>
+          <canvas id="gameweekPointsChart" class="rounded-lg"></canvas>
         </div>
       </div>
     </div>
@@ -87,20 +110,49 @@
         </table>
       </div>
     </div>
+    <div class="comments-section bg-base-200 rounded-xl p-4 w-full max-w-2xl">
+      <h2 class="text-xl font-bold mb-4">Comments</h2>
+      <div v-if="user">
+        <textarea v-model="newComment" placeholder="Add a comment..." class="textarea textarea-bordered w-full mt-4"></textarea>
+        <button @click="submitComment" class="btn btn-primary mt-2" :disabled="isSubmitting">Submit</button>
+      </div>
+      <div v-else>
+        <p class="mt-4">Please <a @click="goToLogin" class="link link-primary">log in</a> to add a comment.</p>
+      </div>
+      <div v-if="comments.length" class="mt-4">
+        <div v-for="comment in comments" :key="comment.id" class="comment mb-4 p-2 bg-base-100 rounded-lg">
+          <div class="flex items-center mb-2">
+            <img :src="comment.user.avatar_url" alt="User avatar" class="w-8 h-8 rounded-full mr-2" />
+            <span class="font-semibold">{{ comment.user.username }}</span>
+            <!-- Show Delete button only if the logged in user is the owner -->
+            <button
+              v-if="user && comment.user.id === user.id"
+              @click="deleteComment(comment.id)"
+              class="btn btn-xs btn-error ml-auto"
+            >
+              Delete
+            </button>
+          </div>
+          <p>{{ comment.comment }}</p>
+          <span class="text-sm text-gray-500">{{ new Date(comment.created_at).toLocaleString() }}</span>
+        </div>
+      </div>
+      <div v-else>
+        <p>No comments yet. Be the first to comment!</p>
+      </div>
+    </div>
   </div>
   <FooterComp />
 </template>
 
 <script>
 import PlayerCardBig from '@/components/PlayerCardBig.vue';
-import NextFixtures from '@/components/NextFixtures.vue';
 import { Chart, registerables } from 'chart.js';
 Chart.register(...registerables);
 
 export default {
   components: {
     PlayerCardBig,
-    NextFixtures,
   },
   data() {
     return {
@@ -128,6 +180,9 @@ export default {
       teamLogo: "",
       selectedGameweeks: "10",
       chartInstance: null,
+      comments: [],
+      newComment: '',
+      isSubmitting: false,
     };
   },
   mounted() {
@@ -154,6 +209,7 @@ export default {
     this.nextFixtures = JSON.parse(sessionStorage.getItem("selectedPlayerNextFixtures")) || [];
     this.teamLogo = sessionStorage.getItem("selectedPlayerTeamLogo") || "";
     this.renderChart();
+    this.fetchComments();
   },
   methods: {
     getPlayerImage(playerCode) {
@@ -193,7 +249,68 @@ export default {
         this.chartInstance.destroy();
       }
       this.renderChart();
+    },
+    async fetchComments() {
+      try {
+        const response = await fetch(`/api/comments?player_id=${this.$route.params.id}`);
+        this.comments = await response.json();
+      } catch (error) {
+        console.error('Error fetching comments:', error);
+      }
+    },
+    async submitComment() {
+      if (!this.newComment.trim()) return;
+
+      this.isSubmitting = true;
+      try {
+        const response = await fetch('/api/add-comment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            player_id: this.$route.params.id,
+            user_id: this.user.id,
+            comment: this.newComment,
+          }),
+        });
+        const result = await response.json();
+        if (result.success) {
+          await this.fetchComments(); // Refresh comments list
+          this.newComment = '';
+        } else {
+          console.error('Error adding comment:', result.error);
+        }
+      } catch (error) {
+        console.error('Error adding comment:', error);
+      } finally {
+        this.isSubmitting = false;
+      }
+    },
+    async deleteComment(commentId) {
+    // Optionally, add a confirmation step:
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+
+    try {
+      const response = await fetch(
+        `/api/delete-comment?comment_id=${commentId}&user_id=${this.user.id}`,
+        { method: 'DELETE' }
+      );
+      const result = await response.json();
+      if (result.success) {
+        // Remove the deleted comment from the comments array
+        this.comments = this.comments.filter(comment => comment.id !== commentId);
+      } else {
+        console.error('Error deleting comment:', result.error);
+      }
+    } catch (error) {
+      console.error('Error deleting comment:', error);
     }
+  },
+    goToLogin() {
+      this.$router.push('/login');
+    },
+    
   },
 };
 </script>
