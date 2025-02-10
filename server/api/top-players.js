@@ -9,13 +9,11 @@ export default defineEventHandler(async (event) => {
 
     const data = await response.json();
 
-    // Create a map of team ID to team name for easier lookup
     const teams = data.teams.reduce((acc, team) => {
       acc[team.id] = team.name;
       return acc;
     }, {});
 
-    // Function to get top 20 players by position
     const getTopPlayersByPosition = (position) => {
       return data.elements
         .filter(player => player.element_type === position)
@@ -26,8 +24,8 @@ export default defineEventHandler(async (event) => {
           first_name: player.first_name,
           second_name: player.second_name,
           code: player.code,
-          team_name: teams[player.team],  // Map team ID to team name
-          price: (player.now_cost / 10).toFixed(1), // Convert price to a readable format
+          team_name: teams[player.team],
+          price: (player.now_cost / 10).toFixed(1),
           position: (player.element_type === 1 ? 'GK' : player.element_type === 2 ? 'DEF' : player.element_type === 3 ? 'MID' : 'FWD'),
           total_points: player.total_points,
           goals_scored: player.goals_scored,
@@ -45,12 +43,11 @@ export default defineEventHandler(async (event) => {
         }));
     };
 
-    // Get top 20 players for each position
     const topPlayers = [
-      ...getTopPlayersByPosition(1), // GK
-      ...getTopPlayersByPosition(2), // DEF
-      ...getTopPlayersByPosition(3), // MID
-      ...getTopPlayersByPosition(4), // FWD
+      ...getTopPlayersByPosition(1),
+      ...getTopPlayersByPosition(2),
+      ...getTopPlayersByPosition(3),
+      ...getTopPlayersByPosition(4),
     ];
 
     return topPlayers;

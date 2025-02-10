@@ -15,7 +15,6 @@ export default defineEventHandler(async (event) => {
 
     const data = await response.json();
 
-    // Create a map of team ID to team name and logo for easier lookup
     const teams = data.teams.reduce((acc, team) => {
       acc[team.id] = {
         name: team.name,
@@ -24,14 +23,12 @@ export default defineEventHandler(async (event) => {
       return acc;
     }, {});
 
-    // Find the player by ID and map to desired properties, including the team name
     const player = data.elements.find((player) => player.id === parseInt(playerId));
 
     if (!player) {
       return { error: 'Player not found' };
     }
 
-    // Fetch detailed player data to get gameweek points
     const playerDetailUrl = `https://fantasy.premierleague.com/api/element-summary/${playerId}/`;
     const playerDetailResponse = await fetch(playerDetailUrl);
     const playerDetailData = await playerDetailResponse.json();
@@ -41,15 +38,13 @@ export default defineEventHandler(async (event) => {
       points: game.total_points,
     }));
 
-    // Fetch fixtures data
     const fixturesUrl = "https://fantasy.premierleague.com/api/fixtures/";
     const fixturesResponse = await fetch(fixturesUrl);
     const fixturesData = await fixturesResponse.json();
 
-    // Filter next 5 upcoming fixtures for the player's team
     const nextFixtures = fixturesData
       .filter(fixture => (fixture.team_h === player.team || fixture.team_a === player.team) && fixture.event >= data.events.find(event => event.is_current).id)
-      .slice(0, 5)
+      .slice(0, 10)
       .map(fixture => ({
         event: fixture.event,
         opponent: fixture.team_h === player.team ? teams[fixture.team_a].name : teams[fixture.team_h].name,
@@ -62,9 +57,9 @@ export default defineEventHandler(async (event) => {
       first_name: player.first_name,
       second_name: player.second_name,
       code: player.code,
-      team_name: teams[player.team].name,  // Map team ID to team name
-      team_logo: teams[player.team].logo,  // Map team ID to team logo
-      price: (player.now_cost / 10).toFixed(1), // Convert price to a readable format
+      team_name: teams[player.team].name,
+      team_logo: teams[player.team].logo,
+      price: (player.now_cost / 10).toFixed(1),
       position: (player.element_type === 1 ? 'GK' : player.element_type === 2 ? 'DEF' : player.element_type === 3 ? 'MID' : 'FWD'),
       total_points: player.total_points,
       goals_scored: player.goals_scored,

@@ -9,7 +9,6 @@
     </div>
     <div class="overflow-x-auto">
       <table class="table">
-        <!-- head -->
         <thead>
           <tr>
             <th>#</th>

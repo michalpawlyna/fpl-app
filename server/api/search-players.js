@@ -15,13 +15,11 @@ export default defineEventHandler(async (event) => {
 
     const data = await response.json();
     
-    // Create a map of team ID to team name for easier lookup
     const teams = data.teams.reduce((acc, team) => {
       acc[team.id] = team.name;
       return acc;
     }, {});
 
-    // Filter players based on the query and map to desired properties, including the team name
     const players = data.elements
       .filter((player) =>
         `${player.first_name} ${player.second_name}`
@@ -33,8 +31,8 @@ export default defineEventHandler(async (event) => {
         first_name: player.first_name,
         second_name: player.second_name,
         code: player.code,
-        team_name: teams[player.team],  // Map team ID to team name
-        price: (player.now_cost / 10).toFixed(1), // Convert price to a readable format
+        team_name: teams[player.team],
+        price: (player.now_cost / 10).toFixed(1),
         position: (player.element_type === 1 ? 'GK' : player.element_type === 2 ? 'DEF' : player.element_type === 3 ? 'MID' : 'FWD'),
         total_points: player.total_points,
         goals_scored: player.goals_scored,

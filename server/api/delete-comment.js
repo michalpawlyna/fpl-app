@@ -6,7 +6,6 @@ const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default defineEventHandler(async (event) => {
-  // Retrieve query parameters from the request
   const { comment_id, user_id } = getQuery(event);
 
   if (!comment_id || !user_id) {
@@ -14,7 +13,6 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // Verify that the comment belongs to the requesting user
     const { data: existingComment, error: selectError } = await supabase
       .from('comments')
       .select('user_id')
@@ -27,7 +25,6 @@ export default defineEventHandler(async (event) => {
       return { error: 'You are not authorized to delete this comment' };
     }
 
-    // Delete the comment
     const { data, error } = await supabase
       .from('comments')
       .delete()

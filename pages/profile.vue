@@ -126,7 +126,6 @@ if (data) {
   email.value = data.email;
 
   if (avatar_url.value) {
-    // Generate a public URL for the avatar
     const { data: publicUrl } = supabase.storage
       .from('avatars')
       .getPublicUrl(avatar_url.value);
@@ -139,7 +138,6 @@ if (data) {
 
 loading.value = false;
 
-// Fetch previous avatars
 onMounted(async () => {
   if (user.value) {
     const { data: files } = await supabase.storage
@@ -197,11 +195,10 @@ async function updateProfile() {
     };
 
     const { error } = await supabase.from('profiles').upsert(updates, {
-      returning: 'minimal', // Don't return the value after inserting
+      returning: 'minimal',
     });
     if (error) throw error;
 
-    // Refresh the page after updating the profile
     window.location.reload();
   } catch (error) {
     alert(error.message);

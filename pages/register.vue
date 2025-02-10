@@ -47,14 +47,12 @@ async function signUp() {
   successMsg.value = null;
 
   try {
-    // Password validation
     if (password.value.length < 8) {
       errorMsg.value = 'Password must be at least 8 characters long.';
       isLoading.value = false;
       return;
     }
 
-    // Check if email is already registered
     const { data: user, error } = await client
       .from('profiles')
       .select('email')
@@ -67,7 +65,6 @@ async function signUp() {
       return;
     }
 
-    // If email is not registered, proceed with sign-up
     const { data: signUpData, error: signUpError } = await client.auth.signUp({
       email: email.value,
       password: password.value,
@@ -78,7 +75,7 @@ async function signUp() {
     successMsg.value = 'Check your email for the confirmation link.';
     setTimeout(() => {
       navigateTo('/login');
-    }, 3000); // Redirect after 3 seconds
+    }, 3000);
   } catch (error) {
     errorMsg.value = error.message;
   } finally {

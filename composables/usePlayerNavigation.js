@@ -9,7 +9,6 @@ export default function usePlayerNavigation() {
       const playerData = await response.json();
 
       if (playerData) {
-        // Save player details to sessionStorage
         sessionStorage.setItem("selectedPlayerName", `${playerData.first_name} ${playerData.second_name}`);
         sessionStorage.setItem("selectedPlayerCode", playerData.code);
         sessionStorage.setItem("selectedPlayerTeam", playerData.team_name);
@@ -32,7 +31,6 @@ export default function usePlayerNavigation() {
         sessionStorage.setItem("selectedPlayerGameweekPoints", JSON.stringify(playerData.gameweek_points));
         sessionStorage.setItem("selectedPlayerNextFixtures", JSON.stringify(playerData.next_fixtures));
 
-        // Store clicked player data in localStorage, limit to last 10 and avoid duplicates
         let clickedPlayers = JSON.parse(localStorage.getItem("clickedPlayers")) || [];
         clickedPlayers = clickedPlayers.filter(player => player.id !== playerData.id);
         clickedPlayers.unshift(playerData);

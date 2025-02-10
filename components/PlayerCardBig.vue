@@ -3,7 +3,7 @@
     <figure>
       <img :src="getPlayerImage(playerCode)" alt="Player image" class="player-img px-3 py-3" />
     </figure>
-    <div class="stats stats-vertical shadow max-w-sm bg-primary text-white">
+    <div class="stats stats-vertical bg-primary text-white max-w-sm">
       <div class="stat">
         <div class="stat-title text-white">Player name</div>
         <div class="stat-value">{{ playerName }}</div>

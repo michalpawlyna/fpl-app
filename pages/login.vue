@@ -40,7 +40,7 @@ const password = ref('');
 const errorMsg = ref(null);
 
 async function signIn() {
-  errorMsg.value = null; // Clear previous error message
+  errorMsg.value = null;
   if (!email.value || !password.value) {
     errorMsg.value = "Email and password are required.";
     return;

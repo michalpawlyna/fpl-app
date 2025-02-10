@@ -1,6 +1,6 @@
 <template>
   <Navbar />
-  <div class="h-auto min-h-screen bg-base-100 mx-10 my-10 flex flex-wrap items-start gap-4 justify-center">
+  <div class="h-auto min-h-screen bg-base-100 m-10 flex flex-col items-center gap-4">
     <PlayerCardBig
       :playerName="playerName"
       :playerCode="playerCode"
@@ -8,33 +8,99 @@
       :playerPrice="playerPrice"
       :teamLogo="teamLogo"
     />
-    <div class="stats stats-vertical bg-base-200 rounded-xl w-lg">
-      <div class="stat">
-        <ul class="divide-y divide-base-200">
-          <li 
-            v-for="fixture in nextFixtures" 
-            :key="fixture.event" 
-            class="flex items-center py-3 px-4 hover:bg-base-300 rounded-lg transition">
-            <img 
-              :src="fixture.opponentLogo" 
-              alt="Opponent logo" 
-              class="w-8 h-8 mr-3" />
-            <div class="flex flex-col">
-              <span class="font-semibold">GW {{ fixture.event }}</span>
-              <span class="text-sm text-base-content">{{ fixture.opponent }}
-                <span 
-                  :class="fixture.is_home ? 'badge badge-success ml-2' : 'badge badge-warning ml-2'">
-                  {{ fixture.is_home ? 'Home' : 'Away' }}
+    <div class="flex flex-wrap justify-center gap-4 w-full">
+      <div class="stats stats-vertical bg-base-200 rounded-xl w-lg">
+        <div class="stat">
+          <ul class="divide-y divide-base-200">
+            <li 
+              v-for="fixture in nextFixtures.slice(0, 10)" 
+              :key="fixture.event" 
+              class="flex items-center py-3 px-4 hover:bg-base-300 rounded-lg transition">
+              <img 
+                :src="fixture.opponentLogo" 
+                alt="Opponent logo" 
+                class="w-8 h-8 mr-3" />
+              <div class="flex flex-col">
+                <span class="font-semibold">GW {{ fixture.event }}</span>
+                <span class="text-sm text-base-content">{{ fixture.opponent }}
+                  <span 
+                    :class="fixture.is_home ? 'badge badge-success ml-2' : 'badge badge-warning ml-2'">
+                    {{ fixture.is_home ? 'Home' : 'Away' }}
+                  </span>
                 </span>
-              </span>
-            </div>
-          </li>
-        </ul>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="stats stats-vertical bg-base-200 rounded-xl max-w-sm">
+        <div class="stat">
+          <table class="table w-full">
+            <tbody>
+              <tr>
+                <td class="font-bold">Position</td>
+                <td>{{ playerPosition }}</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Total Points</td>
+                <td>{{ playerTotalPoints }}</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Goals Scored</td>
+                <td>{{ playerGoalsScored }}</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Assists</td>
+                <td>{{ playerAssists }}</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Clean Sheets</td>
+                <td>{{ playerCleanSheets }}</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Minutes Played</td>
+                <td>{{ playerMinutesPlayed }}</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Form</td>
+                <td>{{ playerForm }}</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Selected By</td>
+                <td>{{ playerSelectedByPercent }}%</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Transfers In</td>
+                <td>{{ playerTransfersInEvent }}</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Transfers Out</td>
+                <td>{{ playerTransfersOutEvent }}</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Yellow Cards</td>
+                <td>{{ playerYellowCards }}</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Red Cards</td>
+                <td>{{ playerRedCards }}</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Bonus Points</td>
+                <td>{{ playerBonusPoints }}</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Injury Status</td>
+                <td>{{ playerInjuryStatus }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-    <div class="stats stats-vertical bg-base-200 rounded-xl max-w-xl">
+    <div class="stats stats-vertical bg-base-200 rounded-xl w-full max-w-lg">
       <div class="stat">
-        <select v-model="selectedGameweeks" @change="updateChart" class="select select-bordered w-full max-w-sm mb-3">
+        <select v-model="selectedGameweeks" @change="updateChart" class="select select-bordered w-full max-w-lg mb-3">
           <option value="5">Last 5</option>
           <option value="10">Last 10</option>
           <option value="20">Last 20</option>
@@ -45,72 +111,7 @@
         </div>
       </div>
     </div>
-    <div class="stats stats-vertical bg-base-200 rounded-xl w-full max-w-xs">
-      <div class="stat">
-        <div class="stat-title text-md font-bold">Player Information</div>
-        <table class="table w-full">
-          <tbody>
-            <tr>
-              <td class="font-bold">Position</td>
-              <td>{{ playerPosition }}</td>
-            </tr>
-            <tr>
-              <td class="font-bold">Total Points</td>
-              <td>{{ playerTotalPoints }}</td>
-            </tr>
-            <tr>
-              <td class="font-bold">Goals Scored</td>
-              <td>{{ playerGoalsScored }}</td>
-            </tr>
-            <tr>
-              <td class="font-bold">Assists</td>
-              <td>{{ playerAssists }}</td>
-            </tr>
-            <tr>
-              <td class="font-bold">Clean Sheets</td>
-              <td>{{ playerCleanSheets }}</td>
-            </tr>
-            <tr>
-              <td class="font-bold">Minutes Played</td>
-              <td>{{ playerMinutesPlayed }}</td>
-            </tr>
-            <tr>
-              <td class="font-bold">Form</td>
-              <td>{{ playerForm }}</td>
-            </tr>
-            <tr>
-              <td class="font-bold">Selected By</td>
-              <td>{{ playerSelectedByPercent }}%</td>
-            </tr>
-            <tr>
-              <td class="font-bold">Transfers In</td>
-              <td>{{ playerTransfersInEvent }}</td>
-            </tr>
-            <tr>
-              <td class="font-bold">Transfers Out</td>
-              <td>{{ playerTransfersOutEvent }}</td>
-            </tr>
-            <tr>
-              <td class="font-bold">Yellow Cards</td>
-              <td>{{ playerYellowCards }}</td>
-            </tr>
-            <tr>
-              <td class="font-bold">Red Cards</td>
-              <td>{{ playerRedCards }}</td>
-            </tr>
-            <tr>
-              <td class="font-bold">Bonus Points</td>
-              <td>{{ playerBonusPoints }}</td>
-            </tr>
-            <tr>
-              <td class="font-bold">Injury Status</td>
-              <td>{{ playerInjuryStatus }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <div class="comments-section bg-base-200 rounded-xl p-4 w-full max-w-2xl">
+    <div class="comments-section bg-base-200 rounded-xl p-4 w-full max-w-lg">
       <h2 class="text-xl font-bold mb-4">Comments</h2>
       <div v-if="user">
         <textarea v-model="newComment" placeholder="Add a comment..." class="textarea textarea-bordered w-full mt-4"></textarea>
@@ -124,7 +125,6 @@
           <div class="flex items-center mb-2">
             <img :src="comment.user.avatar_url" alt="User avatar" class="w-8 h-8 rounded-full mr-2" />
             <span class="font-semibold">{{ comment.user.username }}</span>
-            <!-- Show Delete button only if the logged in user is the owner -->
             <button
               v-if="user && comment.user.id === user.id"
               @click="deleteComment(comment.id)"
@@ -230,12 +230,14 @@ export default {
           datasets: [{
             label: 'Gameweek points',
             data: gameweeksToShow.map(point => point.points),
-            backgroundColor: 'rgba(59, 130, 246, 0.2)', // DaisyUI primary color with transparency
-            borderColor: 'rgba(59, 130, 246, 1)', // DaisyUI primary color
+            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+            borderColor: 'rgba(59, 130, 246, 1)',
             borderWidth: 1.5,
           }]
         },
         options: {
+          responsive: true,
+          maintainAspectRatio: false,
           scales: {
             y: {
               beginAtZero: true
@@ -276,7 +278,7 @@ export default {
         });
         const result = await response.json();
         if (result.success) {
-          await this.fetchComments(); // Refresh comments list
+          await this.fetchComments();
           this.newComment = '';
         } else {
           console.error('Error adding comment:', result.error);
@@ -288,7 +290,6 @@ export default {
       }
     },
     async deleteComment(commentId) {
-    // Optionally, add a confirmation step:
     if (!confirm('Are you sure you want to delete this comment?')) return;
 
     try {
@@ -298,7 +299,6 @@ export default {
       );
       const result = await response.json();
       if (result.success) {
-        // Remove the deleted comment from the comments array
         this.comments = this.comments.filter(comment => comment.id !== commentId);
       } else {
         console.error('Error deleting comment:', result.error);
@@ -310,7 +310,6 @@ export default {
     goToLogin() {
       this.$router.push('/login');
     },
-    
   },
 };
 </script>
